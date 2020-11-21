@@ -120,16 +120,7 @@ class NICE(nn.Module):
         """
         super(NICE, self).__init__()
         self.device = device
-        if prior == 'gaussian':
-            self.prior = torch.distributions.Normal(
-                torch.tensor(0.).to(device), torch.tensor(1.).to(device))
-        elif prior == 'logistic':
-            """Standard logistic distribution.
-            """
-            logistic = TransformedDistribution(Uniform(0, 1), [SigmoidTransform().inv, AffineTransform(loc=0., scale=1.)]).to(device)
-            self.prior = logistic
-        else:
-            raise ValueError('Prior not implemented.')
+
         self.in_out_dim = in_out_dim
         self.coupling = coupling
         self.coupling_type = coupling_type
@@ -333,5 +324,16 @@ class Scaling(nn.Module):
         else:
             x = x * torch.exp(self.scale)
         return x, log_det_J
+    
+class StandardLogistic(torch.distributions.Distribution):
+    def __init__(self):
+        super(StandardLogistic, self).__init__()
 
-
+    def log_prob(self, x):
+        """Computes data log-likelihood.
+        Args:
+            x: input tensor.
+        Returns:
+            log-likelihood.
+        """
+        return -(F.softplus(x) + F.softplus(-x))

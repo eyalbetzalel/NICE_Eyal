@@ -135,8 +135,7 @@ def main(args):
         prior = torch.distributions.Normal(
             torch.tensor(0.).to(device), torch.tensor(1.).to(device))
     elif args.prior == 'logistic':
-        logistic = nice.StandardLogistic
-        prior = logistic
+        prior = nice.StandardLogistic()
     else:
         raise ValueError('Prior not implemented.')
 

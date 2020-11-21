@@ -237,7 +237,7 @@ class NICE(nn.Module):
         Returns:
             log-likelihood of input.
         """
-        return self.log_prob(x)
+        return self.log_prob(x).to(self.device)))
 
 
 def logistic_nice_loglkhd(h, diag):

@@ -131,8 +131,17 @@ def main(args):
                           + 'hidden%s_' % args.hidden \
                           + '.pt'
 
+        if args.prior == 'gaussian':
+            prior = torch.distributions.Normal(
+                torch.tensor(0.).to(device), torch.tensor(1.).to(device))
+        elif args.prior == 'logistic':
+            logistic = nice.StandardLogistic
+            prior = logistic
+        else:
+            raise ValueError('Prior not implemented.')
+
     flow = nice.NICE(
-        prior=args.prior,
+        prior=prior,
         coupling=args.coupling,
         coupling_type=args.coupling_type,
         in_out_dim=full_dim,
@@ -142,14 +151,7 @@ def main(args):
     optimizer = torch.optim.Adam(
         flow.parameters(), lr=args.lr)
 
-    if args.prior == 'gaussian':
-        self.prior = torch.distributions.Normal(
-            torch.tensor(0.).to(device), torch.tensor(1.).to(device))
-    elif args.prior == 'logistic':
-        logistic = nice.StandardLogistic
-        self.prior = logistic
-    else:
-        raise ValueError('Prior not implemented.')
+
 
     train_loss = []
     test_loss = []

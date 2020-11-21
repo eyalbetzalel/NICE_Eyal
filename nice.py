@@ -120,7 +120,7 @@ class NICE(nn.Module):
         """
         super(NICE, self).__init__()
         self.device = device
-
+        self.prior = prior
         self.in_out_dim = in_out_dim
         self.coupling = coupling
         self.coupling_type = coupling_type

@@ -142,10 +142,10 @@ def main(args):
     optimizer = torch.optim.Adam(
         flow.parameters(), lr=args.lr)
 
-    if prior == 'gaussian':
+    if args.prior == 'gaussian':
         self.prior = torch.distributions.Normal(
             torch.tensor(0.).to(device), torch.tensor(1.).to(device))
-    elif prior == 'logistic':
+    elif args.prior == 'logistic':
         logistic = nice.StandardLogistic.to(device)
         self.prior = logistic
     else:

@@ -142,7 +142,14 @@ def main(args):
     optimizer = torch.optim.Adam(
         flow.parameters(), lr=args.lr)
 
-    # TODO fill in
+    if prior == 'gaussian':
+        self.prior = torch.distributions.Normal(
+            torch.tensor(0.).to(device), torch.tensor(1.).to(device))
+    elif prior == 'logistic':
+        logistic = nice.StandardLogistic.to(device)
+        self.prior = logistic
+    else:
+        raise ValueError('Prior not implemented.')
 
     train_loss = []
     test_loss = []

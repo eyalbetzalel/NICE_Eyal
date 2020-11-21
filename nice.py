@@ -124,6 +124,9 @@ class NICE(nn.Module):
             self.prior = torch.distributions.Normal(
                 torch.tensor(0.).to(device), torch.tensor(1.).to(device))
         elif prior == 'logistic':
+            """Standard logistic distribution.
+            """
+            logistic = TransformedDistribution(Uniform(0, 1), [SigmoidTransform().inv, AffineTransform(loc=0., scale=1.)]).to(device)
             self.prior = logistic
         else:
             raise ValueError('Prior not implemented.')
@@ -331,6 +334,4 @@ class Scaling(nn.Module):
             x = x * torch.exp(self.scale)
         return x, log_det_J
 
-"""Standard logistic distribution.
-"""
-logistic = TransformedDistribution(Uniform(0, 1), [SigmoidTransform().inv, AffineTransform(loc=0., scale=1.)]).cuda()
+

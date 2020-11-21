@@ -169,7 +169,7 @@ class NICE(nn.Module):
         else:
             raise ValueError('Coupling Type Error.')
 
-    def inverse(self, z):
+    def f_inv(self, z):
         """Transformation g: Z -> X (inverse of f).
 
         Args:
@@ -185,7 +185,7 @@ class NICE(nn.Module):
             x, _ = self.layer1(x, 0, reverse=True)
         return x
 
-    def forward(self, x):
+    def f(self, x):
         """Transformation f: X -> Z (inverse of g).
 
         Args:
@@ -228,7 +228,16 @@ class NICE(nn.Module):
         """
         z = self.prior.sample((size, self.in_out_dim)).to(self.device)
 
-        return self.inverse(z)
+        return self.f_inv(z)
+
+    def forward(self, x):
+        """Forward pass.
+        Args:
+            x: input minibatch.
+        Returns:
+            log-likelihood of input.
+        """
+        return self.log_prob(x)
 
 
 def logistic_nice_loglkhd(h, diag):

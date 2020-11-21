@@ -24,21 +24,21 @@ def train(flow, trainloader, optimizer, epoch, prior, device, log_pt, model_save
 
         # TODO >> Correct to some massage about irrelevant...
 
-    def loss_fn(fx):
-        """Compute NICE loss w/r/t a prior and optional L1 regularization."""
-        return nice_loss_fn(fx, flow.scaling_diag)
-
-        # if args.lmbda == 0.0:
-        #     return nice_loss_fn(fx, flow.scaling_diag)
-        # else:
-        #     return nice_loss_fn(fx, flow.scaling_diag) + args.lmbda*l1_norm(model, include_bias=True)
+    # def loss_fn(fx):
+    #     """Compute NICE loss w/r/t a prior and optional L1 regularization."""
+    #     return nice_loss_fn(fx, flow.scaling_diag)
+    #
+    #     # if args.lmbda == 0.0:
+    #     #     return nice_loss_fn(fx, flow.scaling_diag)
+    #     # else:
+    #     #     return nice_loss_fn(fx, flow.scaling_diag) + args.lmbda*l1_norm(model, include_bias=True)
 
     running_loss = 0.0
 
     for inputs, _ in tqdm(trainloader):
         inputs = inputs.view(inputs.shape[0], inputs.shape[1] * inputs.shape[2] * inputs.shape[
             3])  # change  shape from BxCxHxW to Bx(C*H*W)
-        loss = loss_fn(flow(inputs.to(device)))
+        loss = -(flow(inputs.to(device))).mean()
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -63,14 +63,14 @@ def test(flow, testloader, epoch, prior, device, model_save_filename, sample_sha
 
         # TODO >> Correct to some massage about irrelevant...
 
-    def loss_fn(fx):
-        """Compute NICE loss w/r/t a prior and optional L1 regularization."""
-        return nice_loss_fn(fx, flow.scaling_diag)
-
-        # if args.lmbda == 0.0:
-        #     return nice_loss_fn(fx, flow.scaling_diag)
-        # else:
-        #     return nice_loss_fn(fx, flow.scaling_diag) + args.lmbda*l1_norm(model, include_bias=True)
+    # def loss_fn(fx):
+    #     """Compute NICE loss w/r/t a prior and optional L1 regularization."""
+    #     return nice_loss_fn(fx, flow.scaling_diag)
+    #
+    #     # if args.lmbda == 0.0:
+    #     #     return nice_loss_fn(fx, flow.scaling_diag)
+    #     # else:
+    #     #     return nice_loss_fn(fx, flow.scaling_diag) + args.lmbda*l1_norm(model, include_bias=True)
 
     flow.eval()  # set to inference mode
     with torch.no_grad():
@@ -87,15 +87,13 @@ def test(flow, testloader, epoch, prior, device, model_save_filename, sample_sha
         for inputs, _ in tqdm(testloader):
             inputs = inputs.view(inputs.shape[0], inputs.shape[1] * inputs.shape[2] * inputs.shape[
                 3])  # change  shape from BxCxHxW to Bx(C*H*W)
-            loss = loss_fn(flow(inputs.to(device)))
+            loss = -(flow(inputs.to(device))).mean()
             running_loss += loss.item()
         return running_loss / len(testloader)
 
 
 def main(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    printdev = "cuda:0" if torch.cuda.is_available() else "cpu"
-    print("#################### Device: " + printdev + " ####################")
     sample_shape = [1, 28, 28]
     full_dim = 28 * 28
     transform = transforms.Compose([

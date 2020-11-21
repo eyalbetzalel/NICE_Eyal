@@ -339,3 +339,15 @@ class StandardLogistic(torch.distributions.Distribution):
             log-likelihood.
         """
         return -(F.softplus(x) + F.softplus(-x))
+    
+    def sample(self, size):
+        
+        """Samples from the distribution.
+        Args:
+            size: number of samples to generate.
+        Returns:
+            samples.
+        """
+        z = torch.distributions.Uniform(0., 1.).sample(size).cuda()
+        return torch.log(z) - torch.log(1. - z)
+    

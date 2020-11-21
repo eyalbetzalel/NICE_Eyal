@@ -333,4 +333,4 @@ class Scaling(nn.Module):
 
 """Standard logistic distribution.
 """
-logistic = TransformedDistribution(Uniform(0, 1), [SigmoidTransform().inv, AffineTransform(loc=0., scale=1.)])
+logistic = TransformedDistribution(Uniform(0, 1), [SigmoidTransform().inv, AffineTransform(loc=0., scale=1.)]).cuda()

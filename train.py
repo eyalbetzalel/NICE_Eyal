@@ -131,14 +131,14 @@ def main(args):
                           + 'hidden%s_' % args.hidden \
                           + '.pt'
 
-        if args.prior == 'gaussian':
-            prior = torch.distributions.Normal(
-                torch.tensor(0.).to(device), torch.tensor(1.).to(device))
-        elif args.prior == 'logistic':
-            logistic = nice.StandardLogistic
-            prior = logistic
-        else:
-            raise ValueError('Prior not implemented.')
+    if args.prior == 'gaussian':
+        prior = torch.distributions.Normal(
+            torch.tensor(0.).to(device), torch.tensor(1.).to(device))
+    elif args.prior == 'logistic':
+        logistic = nice.StandardLogistic
+        prior = logistic
+    else:
+        raise ValueError('Prior not implemented.')
 
     flow = nice.NICE(
         prior=prior,

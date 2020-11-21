@@ -94,7 +94,8 @@ def test(flow, testloader, epoch, prior, device, model_save_filename, sample_sha
 
 def main(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print("#################### Device: " + device + " ####################")
+    printdev = "cuda:0" if torch.cuda.is_available() else "cpu"
+    print("#################### Device: " + printdev + " ####################")
     sample_shape = [1, 28, 28]
     full_dim = 28 * 28
     transform = transforms.Compose([

@@ -89,7 +89,7 @@ def test(flow, testloader, epoch, prior, device, model_save_filename, sample_sha
             inputs = inputs.view(inputs.shape[0], inputs.shape[1] * inputs.shape[2] * inputs.shape[
                 3])  # change  shape from BxCxHxW to Bx(C*H*W)
             #loss = -(flow(inputs.to(device))).mean()
-            loss = -(flow(inputs).mean()
+            loss = -flow(inputs).mean()
             running_loss += loss.item()
         return running_loss / len(testloader)
 

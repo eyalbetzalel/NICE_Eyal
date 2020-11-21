@@ -7,6 +7,8 @@ from torch.distributions.transforms import Transform,SigmoidTransform,AffineTran
 from torch.distributions import Uniform, TransformedDistribution
 import numpy as np
 import torch.nn.init as init
+import torch.nn.functional as F
+
 
 """Additive coupling layer.
 """

@@ -38,8 +38,7 @@ def train(flow, trainloader, optimizer, epoch, prior, device, log_pt, model_save
     for inputs, _ in tqdm(trainloader):
         inputs = inputs.view(inputs.shape[0], inputs.shape[1] * inputs.shape[2] * inputs.shape[
             3])  # change  shape from BxCxHxW to Bx(C*H*W)
-        #loss = -(flow(inputs.to(device))).mean()
-        loss = -flow(inputs).mean()
+        loss = -(flow(inputs.to(device))).mean()
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -88,8 +87,7 @@ def test(flow, testloader, epoch, prior, device, model_save_filename, sample_sha
         for inputs, _ in tqdm(testloader):
             inputs = inputs.view(inputs.shape[0], inputs.shape[1] * inputs.shape[2] * inputs.shape[
                 3])  # change  shape from BxCxHxW to Bx(C*H*W)
-            #loss = -(flow(inputs.to(device))).mean()
-            loss = -flow(inputs).mean()
+            loss = -(flow(inputs.to(device))).mean()
             running_loss += loss.item()
         return running_loss / len(testloader)
 

@@ -98,13 +98,13 @@ class AdditiveCoupling(nn.Module):
         return (a - b)
 
 def _build_relu_network(latent_dim, hidden_dim, hidden_layers):
-    _modules = [ nn.Linear(latent_dim, hidden_dim) ]
+    _modules = nn.ModuleList([ nn.Linear(latent_dim, hidden_dim) ])
     for _ in range(hidden_layers):
         _modules.append( nn.Linear(hidden_dim, hidden_dim) )
         _modules.append( nn.ReLU() )
         #_modules.append( nn.BatchNorm1d(hidden_dim) )
     _modules.append( nn.Linear(hidden_dim, latent_dim) )
-    return nn.Sequential( *_modules )
+    return _modules
 
 """NICE main model.
 """

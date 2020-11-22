@@ -17,6 +17,15 @@ import torch.nn.functional as F
 _get_even = lambda xs: xs[:,0::2]
 _get_odd = lambda xs: xs[:,1::2]
 
+def _build_relu_network(latent_dim, hidden_dim, hidden_layers):
+    _modules = nn.ModuleList([ nn.Linear(latent_dim, hidden_dim) ])
+    _modules.append( nn.ReLU() )
+    for _ in range(hidden_layers):
+        _modules.append( nn.Linear(hidden_dim, hidden_dim) )
+        _modules.append( nn.ReLU() )
+    _modules.append( nn.Linear(hidden_dim, latent_dim) )
+    return nn.Sequential(*_modules)
+
 def _interleave(first, second, mask_config):
     """
     Given 2 rank-2 tensors with same batch dimension, interleave their columns.
@@ -98,15 +107,84 @@ class AdditiveCoupling(nn.Module):
     def anticoupling_law(self, a, b):
         return (a - b)
 
-def _build_relu_network(latent_dim, hidden_dim, hidden_layers):
-    _modules = nn.ModuleList([ nn.Linear(latent_dim, hidden_dim) ])
-    _modules.append( nn.ReLU() )
-    for _ in range(hidden_layers):
-        _modules.append( nn.Linear(hidden_dim, hidden_dim) )
-        _modules.append( nn.ReLU() )
-    _modules.append( nn.Linear(hidden_dim, latent_dim) )
-    return nn.Sequential(*_modules)
+class AffineCoupling(nn.Module):
+    def __init__(self, in_out_dim, mid_dim, hidden, mask_config):
+        """Initialize an affine coupling layer.
 
+        Args:
+            in_out_dim: input/output dimensions.
+            mid_dim: number of units in a hidden layer.
+            hidden: number of hidden layers.
+            mask_config: 1 if transform odd units, 0 if transform even units.
+        """
+        super(AffineCoupling, self).__init__()
+        #TODO fill in
+
+    def forward(self, x, log_det_J, reverse=False):
+        """Forward pass.
+
+        Args:
+            x: input tensor.
+            log_det_J: log determinant of the Jacobian
+            reverse: True in inference mode, False in sampling mode.
+        Returns:
+            transformed tensor and updated log-determinant of Jacobian.
+        """
+        #TODO fill in
+
+"""Log-scaling layer.
+"""
+class Scaling(nn.Module):
+    def __init__(self, dim):
+        """Initialize a (log-)scaling layer.
+
+        Args:
+            dim: input/output dimensions.
+        """
+        super(Scaling, self).__init__()
+        self.scale = nn.Parameter(
+            torch.zeros((1, dim)), requires_grad=True)
+        self.eps = 1e-5
+
+    def forward(self, x, reverse=False):
+        """Forward pass.
+
+        Args:
+            x: input tensor.
+            reverse: True in inference mode, False in sampling mode.
+        Returns:
+            transformed tensor and log-determinant of Jacobian.
+        """
+        log_det_J = torch.sum(self.scale) + self.eps
+        if reverse:
+            x = x * torch.exp(-self.scale)
+        else:
+            x = x * torch.exp(self.scale)
+        return x, log_det_J
+    
+class StandardLogistic(torch.distributions.Distribution):
+    def __init__(self):
+        super(StandardLogistic, self).__init__()
+
+    def log_prob(self, x):
+        """Computes data log-likelihood.
+        Args:
+            x: input tensor.
+        Returns:
+            log-likelihood.
+        """
+        return -(F.softplus(x) + F.softplus(-x))
+    
+    def sample(self, size):
+        
+        """Samples from the distribution.
+        Args:
+            size: number of samples to generate.
+        Returns:
+            samples.
+        """
+        z = torch.distributions.Uniform(0., 1.).sample(size).cuda()
+        return torch.log(z) - torch.log(1. - z)
 
 """NICE main model.
 """
@@ -236,120 +314,4 @@ class NICE(nn.Module):
             log-likelihood of input.
         """
         return self.log_prob(x).to(self.device)
-
-
-def logistic_nice_loglkhd(h, diag):
-    # ===== ===== Loss Function Implementations ===== =====
-    """
-    We assume that we final output of the network are components of a multivariate distribution that
-    factorizes, i.e. the output is (y1,y2,...,yK) ~ p(Y) s.t. p(Y) = p_1(Y1) * p_2(Y2) * ... * p_K(YK),
-    with each individual component's prior distribution coming from a standardized family of
-    distributions, i.e. p_i == Gaussian(mu,sigma) for all i in 1..K, or p_i == Logistic(mu,scale).
-
-    Definition of log-likelihood function with a Logistic prior.
-
-    Args:
-    * h: float tensor of shape (N,D). First dimension is batch dim, second dim consists of components
-      of a factorized probability distribution.
-    * diag: scaling diagonal of shape (D,).
-    Returns:
-    * loss: torch float tensor of shape (N,).
-
-    """
-    # \sum^D_i s_{ii} - { \sum^D_i log(exp(h)+1) + torch.log(exp(-h)+1) }
-    return (torch.sum(diag.scale.data) - (torch.sum(torch.log1p(torch.exp(h[0])) + torch.log1p(torch.exp(-h[0])), dim=1)))
-
-# wrap above loss functions in Modules:
-
-class LogisticPriorNICELoss(nn.Module):
-    def __init__(self, size_average=True):
-        super(LogisticPriorNICELoss, self).__init__()
-        self.size_average = size_average
-
-    def forward(self, fx, diag):
-        if self.size_average:
-            return torch.mean(-logistic_nice_loglkhd(fx, diag))
-        else:
-            return torch.sum(-logistic_nice_loglkhd(fx, diag))
-
-###############################
-
-class AffineCoupling(nn.Module):
-    def __init__(self, in_out_dim, mid_dim, hidden, mask_config):
-        """Initialize an affine coupling layer.
-
-        Args:
-            in_out_dim: input/output dimensions.
-            mid_dim: number of units in a hidden layer.
-            hidden: number of hidden layers.
-            mask_config: 1 if transform odd units, 0 if transform even units.
-        """
-        super(AffineCoupling, self).__init__()
-        #TODO fill in
-
-    def forward(self, x, log_det_J, reverse=False):
-        """Forward pass.
-
-        Args:
-            x: input tensor.
-            log_det_J: log determinant of the Jacobian
-            reverse: True in inference mode, False in sampling mode.
-        Returns:
-            transformed tensor and updated log-determinant of Jacobian.
-        """
-        #TODO fill in
-
-"""Log-scaling layer.
-"""
-class Scaling(nn.Module):
-    def __init__(self, dim):
-        """Initialize a (log-)scaling layer.
-
-        Args:
-            dim: input/output dimensions.
-        """
-        super(Scaling, self).__init__()
-        self.scale = nn.Parameter(
-            torch.zeros((1, dim)), requires_grad=True)
-        self.eps = 1e-5
-
-    def forward(self, x, reverse=False):
-        """Forward pass.
-
-        Args:
-            x: input tensor.
-            reverse: True in inference mode, False in sampling mode.
-        Returns:
-            transformed tensor and log-determinant of Jacobian.
-        """
-        log_det_J = torch.sum(self.scale) + self.eps
-        if reverse:
-            x = x * torch.exp(-self.scale)
-        else:
-            x = x * torch.exp(self.scale)
-        return x, log_det_J
-    
-class StandardLogistic(torch.distributions.Distribution):
-    def __init__(self):
-        super(StandardLogistic, self).__init__()
-
-    def log_prob(self, x):
-        """Computes data log-likelihood.
-        Args:
-            x: input tensor.
-        Returns:
-            log-likelihood.
-        """
-        return -(F.softplus(x) + F.softplus(-x))
-    
-    def sample(self, size):
-        
-        """Samples from the distribution.
-        Args:
-            size: number of samples to generate.
-        Returns:
-            samples.
-        """
-        z = torch.distributions.Uniform(0., 1.).sample(size).cuda()
-        return torch.log(z) - torch.log(1. - z)
     

@@ -1,5 +1,6 @@
 """NICE model
 """
+# WORKING VERSION NO AFF COUP
 
 import torch
 import torch.nn as nn

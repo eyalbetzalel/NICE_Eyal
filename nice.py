@@ -104,7 +104,8 @@ def _build_relu_network(latent_dim, hidden_dim, hidden_layers):
         _modules.append( nn.ReLU() )
         #_modules.append( nn.BatchNorm1d(hidden_dim) )
     _modules.append( nn.Linear(hidden_dim, latent_dim) )
-    return _modules
+    return nn.Sequential(*_modules)
+
 
 """NICE main model.
 """

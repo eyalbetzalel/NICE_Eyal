@@ -108,7 +108,8 @@ class AdditiveCoupling(nn.Module):
         return (a - b)
 
 class AffineCoupling(nn.Module):
-    def __init__(self, in_out_dim, mid_dim, hidden, mask_config):
+    
+    def __init__(self, in_out_dim, mask_config, nonlinearity):
         """Initialize an affine coupling layer.
 
         Args:
@@ -118,7 +119,19 @@ class AffineCoupling(nn.Module):
             mask_config: 1 if transform odd units, 0 if transform even units.
         """
         super(AffineCoupling, self).__init__()
-        #TODO fill in
+
+        self.in_out_dim = in_out_dim
+        self.mask_config = mask_config
+
+        if mask_config:
+            self._first = _get_odd
+            self._second = _get_even
+
+        else:
+            self._first = _get_even
+            self._second = _get_odd
+
+        self.add_module('nonlinearity', nonlinearity)
 
     def forward(self, x, log_det_J, reverse=False):
         """Forward pass.
@@ -130,7 +143,33 @@ class AffineCoupling(nn.Module):
         Returns:
             transformed tensor and updated log-determinant of Jacobian.
         """
-        #TODO fill in
+
+        if reverse:
+            
+            xa = self._first(x)
+            xb = self._second(x)
+            temp = self.nonlinearity(self._first(x))
+            logs = self._first(temp)
+            t = self._second(temp)
+            s = torch.exp(logs)
+            ya = s * xa + t
+            yb = xb
+            y = _interleave(ya, yb, self.mask_config)
+            
+        else:
+            
+            ya = self._first(x)
+            yb = self._second(x)
+            temp = self.nonlinearity(self._first(yb))
+            logs = self._first(temp)
+            t = self._second(temp)
+            s = torch.exp(logs)
+            xa = torch.div((ya - t),s)
+            xb = yb
+            y = _interleave(xa, xb, self.mask_config)
+            
+        return y, log_det_J
+
 
 """Log-scaling layer.
 """
@@ -238,10 +277,36 @@ class NICE(nn.Module):
                 else:
                     init.normal_(p, mean=0., std=0.001)
 
-        elif coupling_type == 'adaptive':
+        elif coupling_type == 'affine':
+            odd = 1
+            even = 0
+            self.layer1 = AffineCoupling(in_out_dim, odd, _build_relu_network(half_dim, hidden_dim, hidden_layers))
+            self.layer2 = AffineCoupling(in_out_dim, even, _build_relu_network(half_dim, hidden_dim, hidden_layers))
+            self.layer3 = AffineCoupling(in_out_dim, odd, _build_relu_network(half_dim, hidden_dim, hidden_layers))
+            self.layer4 = AffineCoupling(in_out_dim, even, _build_relu_network(half_dim, hidden_dim, hidden_layers))
+            self.scaling_diag = Scaling(in_out_dim)
 
-            v=0 #TODO >> Finish
-
+            # randomly initialize weights:
+            for p in self.layer1.parameters():
+                if len(p.shape) > 1:
+                    init.kaiming_uniform_(p, nonlinearity='relu')
+                else:
+                    init.normal_(p, mean=0., std=0.001)
+            for p in self.layer2.parameters():
+                if len(p.shape) > 1:
+                    init.kaiming_uniform_(p, nonlinearity='relu')
+                else:
+                    init.normal_(p, mean=0., std=0.001)
+            for p in self.layer3.parameters():
+                if len(p.shape) > 1:
+                    init.kaiming_uniform_(p, nonlinearity='relu')
+                else:
+                    init.normal_(p, mean=0., std=0.001)
+            for p in self.layer4.parameters():
+                if len(p.shape) > 1:
+                    init.kaiming_uniform_(p, nonlinearity='relu')
+                else:
+                    init.normal_(p, mean=0., std=0.001)
         else:
             raise ValueError('Coupling Type Error.')
 

@@ -17,23 +17,6 @@ def train(flow, trainloader, optimizer, epoch, prior, device, log_pt, model_save
 
     flow.train()  # set to training mode
 
-    # === choose which loss function to build:
-    if prior == 'logistic':
-        nice_loss_fn = LogisticPriorNICELoss(size_average=True)
-    else:
-        v = 0
-
-        # TODO >> Correct to some massage about irrelevant...
-
-    # def loss_fn(fx):
-    #     """Compute NICE loss w/r/t a prior and optional L1 regularization."""
-    #     return nice_loss_fn(fx, flow.scaling_diag)
-    #
-    #     # if args.lmbda == 0.0:
-    #     #     return nice_loss_fn(fx, flow.scaling_diag)
-    #     # else:
-    #     #     return nice_loss_fn(fx, flow.scaling_diag) + args.lmbda*l1_norm(model, include_bias=True)
-
     running_loss = 0.0
 
     for inputs, _ in tqdm(trainloader):
@@ -54,24 +37,8 @@ def train(flow, trainloader, optimizer, epoch, prior, device, log_pt, model_save
 
 
 def test(flow, testloader, epoch, prior, device, model_save_filename, sample_shape):
+    
     flow.train()  # set to training mode
-
-    # === choose which loss function to build:
-    if prior == 'logistic':
-        nice_loss_fn = LogisticPriorNICELoss(size_average=True)
-    else:
-        v = 0
-
-        # TODO >> Correct to some massage about irrelevant...
-
-    # def loss_fn(fx):
-    #     """Compute NICE loss w/r/t a prior and optional L1 regularization."""
-    #     return nice_loss_fn(fx, flow.scaling_diag)
-    #
-    #     # if args.lmbda == 0.0:
-    #     #     return nice_loss_fn(fx, flow.scaling_diag)
-    #     # else:
-    #     #     return nice_loss_fn(fx, flow.scaling_diag) + args.lmbda*l1_norm(model, include_bias=True)
 
     flow.eval()  # set to inference mode
     with torch.no_grad():
@@ -81,7 +48,6 @@ def test(flow, testloader, epoch, prior, device, model_save_filename, sample_sha
         samples = samples.view(-1, sample_shape[0], sample_shape[1], sample_shape[2])
         torchvision.utils.save_image(torchvision.utils.make_grid(samples),
                                      './samples/' + model_save_filename + 'epoch%d.png' % epoch)
-        # TODO full in
 
         running_loss = 0.0
 
@@ -152,15 +118,12 @@ def main(args):
         flow.parameters(), lr=args.lr,betas=(args.momentum, args.decay), eps=1e-4)
 
 
-
     train_loss = []
     test_loss = []
 
     for epoch in range(args.epochs):
         train_loss.append(train(flow, trainloader, optimizer, epoch, args.prior, device,args.log_pt,model_save_filename))
         test_loss.append(test(flow, testloader, epoch, args.prior, device, model_save_filename, sample_shape))
-
-
 
     # Save plot of loss values :
 

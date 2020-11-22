@@ -148,7 +148,7 @@ def main(args):
         hidden_layers=args.hidden,
         device=device).to(device)
     optimizer = torch.optim.Adam(
-        flow.parameters(), lr=args.lr,betas=(momentum, decay), eps=1e-4)
+        flow.parameters(), lr=args.lr,betas=(args.momentum, args.decay), eps=1e-4)
 
 
 
@@ -219,6 +219,14 @@ if __name__ == '__main__':
                         help='save model cpt every X epochs',
                         type=int,
                         default=3)
+    parser.add_argument('--momentum',
+                    help='beta1 in Adam optimizer.',
+                    type=float,
+                    default=0.9)
+    parser.add_argument('--decay',
+                        help='beta2 in Adam optimizer.',
+                        type=float,
+                        default=0.999)
 
     args = parser.parse_args()
     main(args)

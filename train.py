@@ -148,7 +148,7 @@ def main(args):
         hidden_layers=args.hidden,
         device=device).to(device)
     optimizer = torch.optim.Adam(
-        flow.parameters(), lr=args.lr)
+        flow.parameters(), lr=args.lr,betas=(momentum, decay), eps=1e-4)
 
 
 

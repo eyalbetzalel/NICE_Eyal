@@ -1,6 +1,5 @@
 """Training procedure for NICE.
 """
-# WORKING VERSION NO AFF COUP
 
 import argparse
 import torch

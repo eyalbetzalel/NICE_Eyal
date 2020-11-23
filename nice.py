@@ -144,40 +144,32 @@ class AffineCoupling(nn.Module):
             transformed tensor and updated log-determinant of Jacobian.
             
         """
-        def flatten_sum(logps):
-            while len(logps.size()) > 1: 
-                logps = logps.sum(dim=-1)
-            return logps
     
 
         if reverse:
             
             z1, z2 = torch.chunk(x, 2, dim=1)
-            h = self.nonlinearity(z1)
-            #shift = h[:, 0::2]
-            shift = h
-            #scale = F.sigmoid(h[:, 1::2] + 2.)
-            scale = F.sigmoid(h + 2.)
-            z2 /= scale
-            z2 -= shift
-            log_det_J -= flatten_sum(torch.log(scale))
-            y = torch.cat([z1, z2], dim=1)
+            h = self.nonlinearity(z2)
+            shift = h[:, 0::2]
+            
+            scale = F.sigmoid(h[:, 1::2] + 2.)
+            
+            ya = (z1 - shift) / scale
+            yb = z2
+            log_det_J -= torch.log(scale).view(x.shape[0],-1).sum(-1)
+            y = torch.cat([ya, yb], dim=1)
     
             
         else:
             
             z1, z2 = torch.chunk(x, 2, dim=1)
-            h = self.nonlinearity(z1)
-            #shift = h[:, 0::2]
-            shift = h
-            #scale = F.sigmoid(h[:, 1::2] + 2.)
-            scale = F.sigmoid(h + 2.)
-            #import ipdb
-            #ipdb.set_trace()
-            z2 += shift
-            z2 *= scale
-            y = torch.cat([z1, z2], dim=1)
-            log_det_J += flatten_sum(torch.log(scale))
+            h = self.nonlinearity(z2)
+            shift = h[:, 0::2]
+            scale = F.sigmoid(h[:, 1::2] + 2.)
+            ya = z1 * scale + shift
+            yb = z2
+            y = torch.cat([ya, yb], dim=1)
+            log_det_J += torch.log(scale).view(x.shape[0],-1).sum(-1)
 
         return y, log_det_J
 

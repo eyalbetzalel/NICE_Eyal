@@ -169,7 +169,7 @@ class AffineCoupling(nn.Module):
             ya = s * xa + t
             yb = xb
             y = torch.cat([ya, yb],1)
-        log_det_J = torch.sum(torch.log(torch.det(s)).view(x.shape[0],-1),1)
+        log_det_J = torch.sum(torch.log(torch.abs(s)).view(x.shape[0],-1),1)
 
         return y, log_det_J
 

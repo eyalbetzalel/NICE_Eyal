@@ -154,7 +154,7 @@ class AffineCoupling(nn.Module):
             s = torch.exp(logs)
             xa = torch.div((ya - t),s)
             xb = yb
-            y = _interleave(xa, xb, self.mask_config)
+            y = torch.cat([xa, xb],1)
             
         else:
             
@@ -168,7 +168,7 @@ class AffineCoupling(nn.Module):
             s = torch.exp(logs)
             ya = s * xa + t
             yb = xb
-            y = _interleave(ya, yb, self.mask_config)
+            y = torch.cat([ya, yb],1)
             
         return y, log_det_J
 

@@ -11,13 +11,23 @@ import torch.nn.init as init
 import torch.nn.functional as F
 
 
-"""Additive coupling layer.
-"""
-
 _get_even = lambda xs: xs[:,0::2]
 _get_odd = lambda xs: xs[:,1::2]
 
 def _build_relu_network(latent_dim, hidden_dim, hidden_layers, affine=False):
+    
+    """
+    
+    NN for coupling layer
+    
+    args: 
+    
+    latent_dim : Input dimensions 
+    hidden_dim : Ouput dimensions
+    hidden_layers : Number of hidden linear layers in the network
+    affine : boolean variable that indicate if this is affine or additive coupling
+    
+    """
     _modules = nn.ModuleList([ nn.Linear(latent_dim, hidden_dim) ])
     _modules.append( nn.ReLU() )
     for _ in range(hidden_layers):
@@ -153,8 +163,8 @@ class AffineCoupling(nn.Module):
             
             z1, z2 = torch.chunk(x, 2, dim=1)
             h = self.nonlinearity(z2)
-            shift = h[:, 0::2]
-            scale = torch.exp(h[:, 1::2])
+            shift = self._first(h)
+            scale = torch.exp(self._second(h))
             ya = (z1 - shift) / scale
             yb = z2
             #log_det_J -= torch.log(scale).view(x.shape[0],-1).sum(-1)
@@ -165,8 +175,8 @@ class AffineCoupling(nn.Module):
             
             z1, z2 = torch.chunk(x, 2, dim=1)
             h = self.nonlinearity(z2)
-            shift = h[:, 0::2]
-            scale = torch.exp(h[:, 1::2])
+            shift = self._first(h)
+            scale = torch.exp(self._second(h))
             ya = z1 * scale + shift
             yb = z2
             y = torch.cat([ya, yb], dim=1)

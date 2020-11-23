@@ -157,7 +157,7 @@ class AffineCoupling(nn.Module):
             scale = torch.exp(h[:, 1::2])
             ya = (z1 - shift) / scale
             yb = z2
-            log_det_J -= torch.log(scale).view(x.shape[0],-1).sum(-1)
+            #log_det_J -= torch.log(scale).view(x.shape[0],-1).sum(-1)
             y = torch.cat([ya, yb], dim=1)
     
             
@@ -170,7 +170,7 @@ class AffineCoupling(nn.Module):
             ya = z1 * scale + shift
             yb = z2
             y = torch.cat([ya, yb], dim=1)
-            log_det_J += torch.log(scale).view(x.shape[0],-1).sum(-1)
+            log_det_J += torch.log(torch.abs(scale)).view(x.shape[0],-1).sum(-1)
 
         return y, log_det_J
 

@@ -154,7 +154,7 @@ class AffineCoupling(nn.Module):
             h = self.nonlinearity(z1)
             s = torch.sigmoid((h[:, 0::2])+ 2)
             t = h[:, 1::2]
-            ya = x1
+            ya = z1
             yb = z2 / s - t
             y = torch.cat([ya, yb], dim=1)
             

@@ -283,10 +283,10 @@ class NICE(nn.Module):
         elif coupling_type == 'affine':
             odd = 1
             even = 0
-            self.layer1 = AffineCoupling(in_out_dim, odd, _build_relu_network(half_dim, hidden_dim / int(2), hidden_layers))
-            self.layer2 = AffineCoupling(in_out_dim, even, _build_relu_network(half_dim, hidden_dim / int(2), hidden_layers))
-            self.layer3 = AffineCoupling(in_out_dim, odd, _build_relu_network(half_dim, hidden_dim / int(2), hidden_layers))
-            self.layer4 = AffineCoupling(in_out_dim, even, _build_relu_network(half_dim, hidden_dim / int(2), hidden_layers))
+            self.layer1 = AffineCoupling(in_out_dim, odd, _build_relu_network(half_dim, hidden_dim / float(2), hidden_layers))
+            self.layer2 = AffineCoupling(in_out_dim, even, _build_relu_network(half_dim, hidden_dim / float(2), hidden_layers))
+            self.layer3 = AffineCoupling(in_out_dim, odd, _build_relu_network(half_dim, hidden_dim / float(2), hidden_layers))
+            self.layer4 = AffineCoupling(in_out_dim, even, _build_relu_network(half_dim, hidden_dim / float(2), hidden_layers))
             self.scaling_diag = Scaling(in_out_dim)
 
             # randomly initialize weights:

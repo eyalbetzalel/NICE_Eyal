@@ -17,13 +17,16 @@ import torch.nn.functional as F
 _get_even = lambda xs: xs[:,0::2]
 _get_odd = lambda xs: xs[:,1::2]
 
-def _build_relu_network(latent_dim, hidden_dim, hidden_layers):
+def _build_relu_network(latent_dim, hidden_dim, hidden_layers, affine=False):
     _modules = nn.ModuleList([ nn.Linear(latent_dim, hidden_dim) ])
     _modules.append( nn.ReLU() )
     for _ in range(hidden_layers):
         _modules.append( nn.Linear(hidden_dim, hidden_dim) )
         _modules.append( nn.ReLU() )
-    _modules.append( nn.Linear(hidden_dim, latent_dim) )
+    if affine == False:
+        _modules.append( nn.Linear(hidden_dim, latent_dim) )
+    else:
+        _modules.append( nn.Linear(hidden_dim, latent_dim/2) )
     return nn.Sequential(*_modules)
 
 def _interleave(first, second, mask_config):
@@ -281,11 +284,11 @@ class NICE(nn.Module):
         elif coupling_type == 'affine':
             odd = 1
             even = 0
-            hidden_dim = 2 * hidden_dim
-            self.layer1 = AffineCoupling(in_out_dim, odd, _build_relu_network(half_dim, hidden_dim, hidden_layers))
-            self.layer2 = AffineCoupling(in_out_dim, even, _build_relu_network(half_dim, hidden_dim, hidden_layers))
-            self.layer3 = AffineCoupling(in_out_dim, odd, _build_relu_network(half_dim, hidden_dim, hidden_layers))
-            self.layer4 = AffineCoupling(in_out_dim, even, _build_relu_network(half_dim, hidden_dim, hidden_layers))
+            affineBool = True
+            self.layer1 = AffineCoupling(in_out_dim, odd, _build_relu_network(half_dim, hidden_dim, hidden_layers,affineBool))
+            self.layer2 = AffineCoupling(in_out_dim, even, _build_relu_network(half_dim, hidden_dim, hidden_layers,affineBool))
+            self.layer3 = AffineCoupling(in_out_dim, odd, _build_relu_network(half_dim, hidden_dim, hidden_layers,affineBool))
+            self.layer4 = AffineCoupling(in_out_dim, even, _build_relu_network(half_dim, hidden_dim, hidden_layers,affineBool))
             self.scaling_diag = Scaling(in_out_dim)
 
             # randomly initialize weights:

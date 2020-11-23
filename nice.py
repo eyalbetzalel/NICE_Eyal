@@ -148,8 +148,10 @@ class AffineCoupling(nn.Module):
             
             z1, z2 = torch.chunk(x, 2, dim=1)
             h = self.nonlinearity(z1)
-            shift = h[:, 0::2]
-            scale = F.sigmoid(h[:, 1::2] + 2.)
+            #shift = h[:, 0::2]
+            shift = h
+            #scale = F.sigmoid(h[:, 1::2] + 2.)
+            scale = F.sigmoid(h + 2.)
             z2 /= scale
             z2 -= shift
             log_det_J -= flatten_sum(torch.log(scale))
@@ -160,10 +162,12 @@ class AffineCoupling(nn.Module):
             
             z1, z2 = torch.chunk(x, 2, dim=1)
             h = self.nonlinearity(z1)
-            shift = h[:, 0::2]
-            scale = F.sigmoid(h[:, 1::2] + 2.)
-            import ipdb
-            ipdb.set_trace()
+            #shift = h[:, 0::2]
+            shift = h
+            #scale = F.sigmoid(h[:, 1::2] + 2.)
+            scale = F.sigmoid(h + 2.)
+            #import ipdb
+            #ipdb.set_trace()
             z2 += shift
             z2 *= scale
             y = torch.cat([z1, z2], dim=1)

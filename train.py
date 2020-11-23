@@ -8,7 +8,6 @@ import torchvision
 from torchvision import transforms
 from tqdm import tqdm
 import nice
-from nice import LogisticPriorNICELoss
 import matplotlib.pyplot as plt
 import os
 

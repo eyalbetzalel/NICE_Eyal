@@ -26,7 +26,7 @@ def _build_relu_network(latent_dim, hidden_dim, hidden_layers, affine=False):
     if affine == False:
         _modules.append( nn.Linear(hidden_dim, latent_dim) )
     else:
-        _modules.append( nn.Linear(hidden_dim, int(latent_dim/2)) )
+        _modules.append( nn.Linear(hidden_dim, int(latent_dim*2)) )
     return nn.Sequential(*_modules)
 
 def _interleave(first, second, mask_config):

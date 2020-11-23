@@ -42,7 +42,7 @@ def test(flow, testloader, epoch, prior, device, model_save_filename, sample_sha
 
     flow.eval()  # set to inference mode
     with torch.no_grad():
-        samples = flow.sample(100).cpu()
+        samples = flow.sample(64).cpu()
         noise = torch.distributions.Uniform(0., 1.).sample(samples.size())
         samples = (samples * 255. + noise) / 256.
         samples = samples.view(-1, sample_shape[0], sample_shape[1], sample_shape[2])
@@ -134,7 +134,7 @@ def main(args):
     ax.set_xlabel("Epoch")
     ax.set_ylabel("Loss")
     ax.legend(["Train Loss", "Test Loss"])
-    plt.savefig(os.path.join(os.getcwd(), "loss.png"))
+    plt.savefig(os.path.join(os.getcwd(), model_save_filename + "_loss.png"))
 
 
 if __name__ == '__main__':

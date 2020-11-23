@@ -146,18 +146,6 @@ class AffineCoupling(nn.Module):
 
         if reverse:
             
-            xa = self._first(x)
-            xb = self._second(x)
-            temp = self.nonlinearity(self._first(x))
-            logs = self._first(temp)
-            t = self._second(temp)
-            s = torch.exp(logs)
-            ya = s * xa + t
-            yb = xb
-            y = _interleave(ya, yb, self.mask_config)
-            
-        else:
-            
             ya = self._first(x)
             yb = self._second(x)
             import ipdb
@@ -169,6 +157,18 @@ class AffineCoupling(nn.Module):
             xa = torch.div((ya - t),s)
             xb = yb
             y = _interleave(xa, xb, self.mask_config)
+            
+        else:
+            
+            xa = self._first(x)
+            xb = self._second(x)
+            temp = self.nonlinearity(xb)
+            logs = self._first(temp)
+            t = self._second(temp)
+            s = torch.exp(logs)
+            ya = s * xa + t
+            yb = xb
+            y = _interleave(ya, yb, self.mask_config)
             
         return y, log_det_J
 

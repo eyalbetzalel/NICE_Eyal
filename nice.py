@@ -142,7 +142,13 @@ class AffineCoupling(nn.Module):
             reverse: True in inference mode, False in sampling mode.
         Returns:
             transformed tensor and updated log-determinant of Jacobian.
+            
         """
+        def flatten_sum(logps):
+            while len(logps.size()) > 1: 
+                logps = logps.sum(dim=-1)
+            return logps
+    
 
         if reverse:
             

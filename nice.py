@@ -232,7 +232,7 @@ class NICE(nn.Module):
         """Initialize a NICE.
 
         Args:
-            coupling_type: 'additive' or 'adaptive'
+            coupling_type: 'additive' or 'affine'
             coupling: number of coupling layers.
             in_out_dim: input/output dimensions.
             hidden_dim: number of units in a hidden layer.

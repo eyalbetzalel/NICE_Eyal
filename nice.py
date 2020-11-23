@@ -147,7 +147,7 @@ class AffineCoupling(nn.Module):
         if reverse:
             
             z1, z2 = torch.chunk(x, 2, dim=1)
-            h = self.NN(z1)
+            h = self.nonlinearity(z1)
             shift = h[:, 0::2]
             scale = F.sigmoid(h[:, 1::2] + 2.)
             z2 /= scale
@@ -162,6 +162,8 @@ class AffineCoupling(nn.Module):
             h = self.nonlinearity(z1)
             shift = h[:, 0::2]
             scale = F.sigmoid(h[:, 1::2] + 2.)
+            import ipdb
+            ipdb.set_trace()
             z2 += shift
             z2 *= scale
             y = torch.cat([z1, z2], dim=1)

@@ -162,29 +162,29 @@ class AffineCoupling(nn.Module):
         if reverse:
             
             z1, z2 = torch.chunk(x, 2, dim=1)
-            z1 = self._first(x)
-            z2 = self._second(x)
+            #z1 = self._first(x)
+            #z2 = self._second(x)
             h = self.nonlinearity(z2)
             scale = torch.exp(self._first(h))
             shift = self._second(h)
             ya = (z1 - shift) / scale
             yb = z2
             log_det_J -= torch.log(scale).view(x.shape[0],-1).sum(-1)
-            y = torch.cat([ya, yb], dim=1)
-            #y = _interleave(ya, yb, self.mask_config)
+            #y = torch.cat([ya, yb], dim=1)
+            y = _interleave(ya, yb, self.mask_config)
             
         else:
             
             z1, z2 = torch.chunk(x, 2, dim=1)
-            z1 = self._first(x)
-            z2 = self._second(x)
+            #z1 = self._first(x)
+            #z2 = self._second(x)
             h = self.nonlinearity(z2)
             scale = torch.exp(self._first(h))
             shift = self._second(h)
             ya = z1 * scale + shift
             yb = z2
-            y = torch.cat([ya, yb], dim=1)
-            #y = _interleave(ya, yb, self.mask_config)
+            #y = torch.cat([ya, yb], dim=1)
+            y = _interleave(ya, yb, self.mask_config)
             log_det_J += torch.log(torch.abs(scale)).view(x.shape[0],-1).sum(-1)
 
         return y, log_det_J

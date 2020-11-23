@@ -160,6 +160,8 @@ class AffineCoupling(nn.Module):
             
             ya = self._first(x)
             yb = self._second(x)
+            import ipdb
+            ipdb.set_trace()
             temp = self.nonlinearity(self._first(yb))
             logs = self._first(temp)
             t = self._second(temp)

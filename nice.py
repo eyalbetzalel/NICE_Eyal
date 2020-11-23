@@ -150,9 +150,9 @@ class AffineCoupling(nn.Module):
             
             z1, z2 = torch.chunk(x, 2, dim=1)
             h = self.nonlinearity(z2)
-            shift = h[:, 0::2]
+            shift = h
             
-            scale = F.sigmoid(h[:, 1::2] + 2.)
+            scale = F.sigmoid(h + 2.)
             
             ya = (z1 - shift) / scale
             yb = z2
@@ -164,8 +164,8 @@ class AffineCoupling(nn.Module):
             
             z1, z2 = torch.chunk(x, 2, dim=1)
             h = self.nonlinearity(z2)
-            shift = h[:, 0::2]
-            scale = F.sigmoid(h[:, 1::2] + 2.)
+            shift = h
+            scale = F.sigmoid(h + 2.)
             ya = z1 * scale + shift
             yb = z2
             y = torch.cat([ya, yb], dim=1)
@@ -283,10 +283,10 @@ class NICE(nn.Module):
         elif coupling_type == 'affine':
             odd = 1
             even = 0
-            self.layer1 = AffineCoupling(in_out_dim, odd, _build_relu_network(half_dim, int(hidden_dim / float(2)), hidden_layers))
-            self.layer2 = AffineCoupling(in_out_dim, even, _build_relu_network(half_dim, int(hidden_dim / float(2)), hidden_layers))
-            self.layer3 = AffineCoupling(in_out_dim, odd, _build_relu_network(half_dim, int(hidden_dim / float(2)), hidden_layers))
-            self.layer4 = AffineCoupling(in_out_dim, even, _build_relu_network(half_dim, int(hidden_dim / float(2)), hidden_layers))
+            self.layer1 = AffineCoupling(in_out_dim, odd, _build_relu_network(half_dim, hidden_dim, hidden_layers))
+            self.layer2 = AffineCoupling(in_out_dim, even, _build_relu_network(half_dim, hidden_dim, hidden_layers))
+            self.layer3 = AffineCoupling(in_out_dim, odd, _build_relu_network(half_dim, hidden_dim, hidden_layers))
+            self.layer4 = AffineCoupling(in_out_dim, even, _build_relu_network(half_dim, hidden_dim, hidden_layers))
             self.scaling_diag = Scaling(in_out_dim)
 
             # randomly initialize weights:

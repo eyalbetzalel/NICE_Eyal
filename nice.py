@@ -151,26 +151,38 @@ class AffineCoupling(nn.Module):
         if reverse:
             
             z1, z2 = torch.chunk(x, 2, dim=1)
-            h = self.nonlinearity(z2)
-            scale = torch.exp((h[:, 0::2]))
-            shift = h[:, 1::2]
-            ya = (z1 - shift) / scale
-            yb = z2
-            log_det_J -= torch.log(scale).view(x.shape[0],-1).sum(-1)
+            h = self.nonlinearity(z1)
+            s = torch.sigmoid((h[:, 0::2])+ 2)
+            t = h[:, 1::2]
+            ya = x1
+            yb = z2 / s - t
             y = torch.cat([ya, yb], dim=1)
             
         else:
             
             z1, z2 = torch.chunk(x, 2, dim=1)
-            h = self.nonlinearity(z2)
-            scale = torch.exp((h[:, 0::2]))
-            shift = h[:, 1::2]
-            ya = z1 * scale + shift
-            yb = z2
+            h = self.nonlinearity(z1)
+            s = torch.sigmoid((h[:, 0::2])+ 2)
+            t = h[:, 1::2]
+            ya = z1
+            yb = (z2 + t) * s
             y = torch.cat([ya, yb], dim=1)
-            log_det_J += torch.log(torch.abs(scale)).view(x.shape[0],-1).sum(-1)
+            log_det_J += torch.sum(torch.log(s).view(s.shape[0], -1), 1)
 
         return y, log_det_J
+    
+        ############
+        
+       
+
+
+        y1, y2 = self.mask_config * x, (1. - self.mask_config) * x
+        intermediate = self.net(y1)
+        log_s = self.mask_config * intermediate
+        s = torch.sigmoid(log_s + 2)
+        t = (1. - self.mask_config) * intermediate
+        x1, x2 = y1, y2 / s - t
+        return x1 + x2, log_det_J
 
 
 class Scaling(nn.Module):

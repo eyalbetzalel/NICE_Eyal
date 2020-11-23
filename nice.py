@@ -146,30 +146,26 @@ class AffineCoupling(nn.Module):
 
         if reverse:
             
-            ya = self._first(x)
-            yb = self._second(x)
-            temp = self.nonlinearity(yb)
-            logs = temp
-            t = temp
-            s = torch.exp(logs)
-            xa = torch.div((ya - t),s)
-            xb = yb
-            y = torch.cat([xa, xb],1)
+            z1, z2 = torch.chunk(x, 2, dim=1)
+            h = self.NN(z1)
+            shift = h[:, 0::2]
+            scale = F.sigmoid(h[:, 1::2] + 2.)
+            z2 /= scale
+            z2 -= shift
+            log_det_J -= flatten_sum(torch.log(scale))
+            y = torch.cat([z1, z2], dim=1)
+    
             
         else:
             
-            xa = self._first(x)
-            xb = self._second(x)
-            temp = self.nonlinearity(xb)
-            logs = temp
-            t = temp
-            #logs = self._first(temp)
-            #t = self._second(temp)
-            s = torch.exp(logs)
-            ya = s * xa + t
-            yb = xb
-            y = torch.cat([ya, yb],1)
-        log_det_J = torch.sum(torch.log(torch.abs(s)).view(x.shape[0],-1),1)
+            z1, z2 = torch.chunk(x, 2, dim=1)
+            h = self.nonlinearity(z1)
+            shift = h[:, 0::2]
+            scale = F.sigmoid(h[:, 1::2] + 2.)
+            z2 += shift
+            z2 *= scale
+            y = torch.cat([z1, z2], dim=1)
+            log_det_J += flatten_sum(torch.log(scale))
 
         return y, log_det_J
 

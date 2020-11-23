@@ -161,8 +161,10 @@ class AffineCoupling(nn.Module):
             xa = self._first(x)
             xb = self._second(x)
             temp = self.nonlinearity(xb)
-            logs = self._first(temp)
-            t = self._second(temp)
+            logs = temp
+            t = temp
+            #logs = self._first(temp)
+            #t = self._second(temp)
             s = torch.exp(logs)
             import ipdb
             ipdb.set_trace()

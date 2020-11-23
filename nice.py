@@ -1,6 +1,5 @@
 """NICE model
 """
-# WORKING VERSION NO AFF COUP
 
 import torch
 import torch.nn as nn
@@ -133,16 +132,6 @@ class AffineCoupling(nn.Module):
         """
         super(AffineCoupling, self).__init__()
 
-        self.in_out_dim = in_out_dim
-        self.mask_config = mask_config
-
-        if mask_config:
-            self._first = _get_odd
-            self._second = _get_even
-
-        else:
-            self._first = _get_even
-            self._second = _get_odd
 
         self.add_module('nonlinearity', nonlinearity)
 
@@ -162,8 +151,6 @@ class AffineCoupling(nn.Module):
         if reverse:
             
             z1, z2 = torch.chunk(x, 2, dim=1)
-            #z1 = self._first(x)
-            #z2 = self._second(x)
             h = self.nonlinearity(z2)
             scale = torch.exp((h[:, 0::2]))
             shift = h[:, 1::2]
@@ -171,28 +158,27 @@ class AffineCoupling(nn.Module):
             yb = z2
             log_det_J -= torch.log(scale).view(x.shape[0],-1).sum(-1)
             y = torch.cat([ya, yb], dim=1)
-            #y = _interleave(ya, yb, self.mask_config)
             
         else:
             
             z1, z2 = torch.chunk(x, 2, dim=1)
-            #z1 = self._first(x)
-            #z2 = self._second(x)
             h = self.nonlinearity(z2)
             scale = torch.exp((h[:, 0::2]))
             shift = h[:, 1::2]
             ya = z1 * scale + shift
             yb = z2
             y = torch.cat([ya, yb], dim=1)
-            #y = _interleave(ya, yb, self.mask_config)
             log_det_J += torch.log(torch.abs(scale)).view(x.shape[0],-1).sum(-1)
 
         return y, log_det_J
 
 
-"""Log-scaling layer.
-"""
 class Scaling(nn.Module):
+    
+    """
+    Log-scaling layer.
+    """
+
     def __init__(self, dim):
         """Initialize a (log-)scaling layer.
 

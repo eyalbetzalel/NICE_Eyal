@@ -149,8 +149,8 @@ class AffineCoupling(nn.Module):
             ya = self._first(x)
             yb = self._second(x)
             temp = self.nonlinearity(self._first(yb))
-            logs = self._first(temp)
-            t = self._second(temp)
+            logs = temp
+            t = temp
             s = torch.exp(logs)
             xa = torch.div((ya - t),s)
             xb = yb
